@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% block title %}LocalBite - Home Cooked Meals Near You{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="py-5 py-lg-6 bg-light">
+    <div class="container">
+        <div class="row align-items-center g-5">
+
+            <!-- Left - Text -->
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">
+                    Delicious Home-Style Meals
+                    <br>
+                    <span class="text-primary">Made Just for You</span>
+                </h1>
+                <p class="lead text-muted mb-4">
+                    Discover the best local home kitchens, small cafés, and passionate cooks in your neighborhood.
+                    Customize every dish exactly how you like it.
+                </p>
+
+                <div class="d-flex flex-column flex-sm-row gap-3">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'restaurant_list' %}" class="btn btn-primary btn-lg px-5 py-3">
+                        <i class="bi bi-shop me-2"></i> Browse Restaurants
+                    </a>
+                    {% else %}
+                    <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg px-5 py-3">
+                        <i class="bi bi-person-plus me-2"></i> Sign Up Free
+                    </a>
+                    <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary btn-lg px-5 py-3">
+                        Login
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="mt-5 d-flex gap-5">
+                    <div>
+                        <h5 class="fw-bold">100+</h5>
+                        <p class="text-muted mb-0 small">Local Kitchens</p>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold">Customizable</h5>
+                        <p class="text-muted mb-0 small">Every Order</p>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold">Hyper-Local</h5>
+                        <p class="text-muted mb-0 small">Fast Delivery</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right - Image / Illustration -->
+            <div class="col-lg-6">
+                <div class="position-relative">
+                    <img src="https://images.unsplash.com/photo-1600891964599-f61ba0e24092?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                        alt="Delicious homemade food" class="img-fluid rounded-4 shadow-lg">
+                    <div class="position-absolute bottom-0 start-0 end-0 bg-gradient p-4 text-white rounded-bottom-4">
+                        <h5 class="mb-1">Mom's Special Thakali Set</h5>
+                        <p class="mb-0 small">Custom spice level • No onion • No garlic</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Featured Restaurants -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Featured Local Kitchens</h2>
+            <p class="text-muted lead">Popular home chefs and small cafés loved by our community</p>
+        </div>
+
+        <div class="row g-4">
+            {% for restaurant in restaurants|slice:":6" %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm hover-shadow">
+                    <img src="{% if restaurant.logo %}{{ restaurant.logo.url }}{% else %}https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80{% endif %}"
+                        class="card-img-top" alt="{{ restaurant.name }}" style="height: 220px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">{{ restaurant.name }}</h5>
+                        <p class="card-text text-muted small mb-2">
+                            {{ restaurant.cuisine }} • {{ restaurant.location }}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge bg-success">Open Now</span>
+                            </div>
+                            <a href="{% url 'restaurant_detail' restaurant.pk %}"
+                                class="btn btn-sm btn-outline-primary">
+                                View Menu →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="lead text-muted">No restaurants available yet.</p>
+                {% if user.role == 'vendor' %}
+                <a href="{% url 'create_restaurant' %}" class="btn btn-primary">
+                    Create Your Kitchen →
+                </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="" class="btn btn-outline-primary btn-lg px-5">
+                See All Restaurants
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose LocalBite -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Why Choose LocalBite?</h2>
+            <p class="text-muted lead">We care about quality, customization, and real connection with your food</p>
+        </div>
+
+        <div class="row g-4 text-center">
+            <div class="col-md-4">
+                <div class="p-4">
+                    <div class="display-4 text-primary mb-3">
+                        <i class="bi bi-chat-dots-fill"></i>
+                    </div>
+                    <h4 class="fw-bold">Real Customization</h4>
+                    <p class="text-muted">
+                        Tell the kitchen exactly what you want — spice level, allergies, no plastic, ingredient swaps...
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-4">
+                    <div class="display-4 text-primary mb-3">
+                        <i class="bi bi-house-heart-fill"></i>
+                    </div>
+                    <h4 class="fw-bold">Home-style & Local</h4>
+                    <p class="text-muted">
+                        Support small home chefs and neighborhood kitchens — not just big chains.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-4">
+                    <div class="display-4 text-primary mb-3">
+                        <i class="bi bi-shield-check-fill"></i>
+                    </div>
+                    <h4 class="fw-bold">Clear Communication</h4>
+                    <p class="text-muted">
+                        Kitchens must read and acknowledge your special requests before preparing.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">How It Works</h2>
+            <p class="text-muted lead">Ordering fresh home-cooked food made simple</p>
+        </div>
+
+        <div class="row g-5 justify-content-center">
+            <div class="col-md-3 text-center">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4"
+                    style="width: 90px; height: 90px;">
+                    <h2 class="mb-0">1</h2>
+                </div>
+                <h5 class="fw-bold">Browse & Select</h5>
+                <p class="text-muted">Find local kitchens and dishes you love</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4"
+                    style="width: 90px; height: 90px;">
+                    <h2 class="mb-0">2</h2>
+                </div>
+                <h5 class="fw-bold">Customize Your Way</h5>
+                <p class="text-muted">Spice level, allergies, eco options & more</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4"
+                    style="width: 90px; height: 90px;">
+                    <h2 class="mb-0">3</h2>
+                </div>
+                <h5 class="fw-bold">Kitchen Prepares</h5>
+                <p class="text-muted">They confirm your requests before cooking</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4"
+                    style="width: 90px; height: 90px;">
+                    <h2 class="mb-0">4</h2>
+                </div>
+                <h5 class="fw-bold">Enjoy Fresh Food</h5>
+                <p class="text-muted">Delivered hot and made with care</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Final CTA -->
+<section class="py-5 bg-primary text-white text-center">
+    <div class="container">
+        <h2 class="fw-bold mb-4">Ready to Taste Real Home Cooking?</h2>
+        <p class="lead mb-4 opacity-90">
+            Join hundreds of people enjoying personalized, local meals every day.
+        </p>
+        {% if not user.is_authenticated %}
+        <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg px-5 py-3 fw-bold">
+            Get Started Now →
+        </a>
+        {% else %}
+        <a href="" class="btn btn-light btn-lg px-5 py-3 fw-bold">
+            Browse Kitchens Now →
+        </a>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}

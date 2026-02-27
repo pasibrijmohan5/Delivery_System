@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Join LocalBite | Fresh Local Food Awaits{% endblock %}
+
+{% block content %}
+
+<style>
+    :root {
+        --primary: #ff6b35;
+        /* appetizing orange */
+        --primary-dark: #e55a2a;
+        --accent: #ffb259;
+        --text-dark: #1f2937;
+        --text-light: #6b7280;
+        --bg-gradient: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+    }
+
+    .register-hero {
+        min-height: 100vh;
+        background: var(--bg-gradient);
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        overflow: hidden;
+    }
+
+    .register-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.18) 0%, transparent 60%);
+        pointer-events: none;
+    }
+
+    .register-card {
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15),
+            0 8px 32px rgba(255, 107, 53, 0.12);
+        padding: 2.5rem 2rem;
+        width: 100%;
+        max-width: 480px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        position: relative;
+        overflow: hidden;
+        animation: floatIn 1s ease-out;
+    }
+
+    @keyframes floatIn {
+        from {
+            opacity: 0;
+            transform: translateY(40px) scale(0.96);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .logo-title {
+        text-align: center;
+        font-size: 2.25rem;
+        font-weight: 800;
+        color: var(--primary);
+        margin-bottom: 0.25rem;
+        letter-spacing: -0.025em;
+    }
+
+    .subtitle {
+        text-align: center;
+        color: var(--text-light);
+        font-size: 1.05rem;
+        margin-bottom: 2rem;
+    }
+
+    .floating-label-group {
+        position: relative;
+        margin-bottom: 1.75rem;
+    }
+
+    .floating-label-group input {
+        width: 100%;
+        padding: 1.1rem 1rem 0.6rem;
+        border: 1.5px solid #d1d5db;
+        border-radius: 12px;
+        font-size: 1rem;
+        background: rgba(255, 255, 255, 0.7);
+        transition: all 0.25s ease;
+        outline: none;
+    }
+
+    .floating-label-group input:focus,
+    .floating-label-group input:not(:placeholder-shown) {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.12);
+    }
+
+    .floating-label-group label {
+        position: absolute;
+        left: 1rem;
+        top: 1.05rem;
+        color: var(--text-light);
+        font-size: 1rem;
+        pointer-events: none;
+        transition: all 0.25s ease;
+    }
+
+    .floating-label-group input:focus+label,
+    .floating-label-group input:not(:placeholder-shown)+label {
+        top: 0.35rem;
+        font-size: 0.82rem;
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    .btn-register {
+        background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+        color: white;
+        font-weight: 700;
+        padding: 1rem;
+        border-radius: 12px;
+        border: none;
+        width: 100%;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+    }
+
+    .btn-register:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(255, 107, 53, 0.4);
+        background: linear-gradient(90deg, var(--primary-dark) 0%, #ff9933 100%);
+    }
+
+    .login-link {
+        text-align: center;
+        margin-top: 1.8rem;
+        font-size: 0.98rem;
+        color: var(--text-light);
+    }
+
+    .login-link a {
+        color: var(--primary);
+        font-weight: 700;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .login-link a:hover {
+        color: var(--primary-dark);
+        text-decoration: underline;
+    }
+
+    @media (max-width: 480px) {
+        .register-card {
+            padding: 2rem 1.4rem;
+        }
+
+        .logo-title {
+            font-size: 2rem;
+        }
+    }
+</style>
+
+<section class="register-hero">
+    <div class="register-card">
+        <h1 class="logo-title">LocalBite</h1>
+        <p class="subtitle">Discover & order the best local food near you</p>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="floating-label-group">
+                <input type="text" name="username" placeholder=" " required>
+                <label>Username</label>
+            </div>
+
+            <div class="floating-label-group">
+                <input type="email" name="email" placeholder=" " required>
+                <label>Email address</label>
+            </div>
+
+            <div class="floating-label-group">
+                <input type="password" name="password1" placeholder=" " required>
+                <label>Password</label>
+            </div>
+
+            <div class="floating-label-group">
+                <input type="password" name="password2" placeholder=" " required>
+                <label>Confirm password</label>
+            </div>
+
+            <button type="submit" class="btn-register">
+                Create My Account
+            </button>
+        </form>
+
+        <div class="login-link">
+            Already have an account? <a href="{% url 'accounts:login'%}">Sign in</a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
