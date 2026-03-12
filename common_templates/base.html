@@ -82,8 +82,8 @@
                             href="{% url 'main:home' %}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'restaurant_list' %}active{% endif %}"
-                            href="">Restaurants</a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
+                            href="#menu">Our Menu</a>
                     </li>
                     {% if user.is_authenticated and user.role == 'customer' %}
                     <li class="nav-item">
@@ -173,8 +173,8 @@
                         <i class="bi bi-egg-fried me-2"></i>LocalBite
                     </h4>
                     <p class="text-secondary">
-                        Connecting you with the best home-style kitchens and small cafés in your neighborhood.
-                        Fresh, customized, and made with love.
+                        Fresh, authentic, and made with love. Experience the finest home-style cooking 
+                        delivered straight to your door.
                     </p>
                 </div>
 
@@ -183,7 +183,7 @@
                     <h6 class="text-white mb-3">Quick Links</h6>
                     <ul class="list-unstyled">
                         <li><a href="{% url 'main:home' %}">Home</a></li>
-                        <li><a href="">All Restaurants</a></li>
+                        <li><a href="#menu">Menu</a></li>
                         <li><a href="#">How It Works</a></li>
                         <li><a href="#">Contact Us</a></li>
                     </ul>
@@ -196,7 +196,7 @@
                         <li><a href="">My Orders</a></li>
                         <li><a href="#">Favorites</a></li>
                         <li><a href="#">Help & Support</a></li>
-                        <li><a href="#">Become a Partner</a></li>
+                        <li><a href="#">Join Our Newsletter</a></li>
                     </ul>
                 </div>
 
