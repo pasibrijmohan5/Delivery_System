@@ -11,42 +11,38 @@
             <!-- Left - Text -->
             <div class="col-lg-6">
                 <h1 class="display-4 fw-bold mb-4">
-                    Delicious Home-Style Meals
+                    Authentic Home-Style Cooking
                     <br>
-                    <span class="text-primary">Made Just for You</span>
+                    <span class="text-primary">Delivered to Your Door</span>
                 </h1>
                 <p class="lead text-muted mb-4">
-                    Discover the best local home kitchens, small cafés, and passionate cooks in your neighborhood.
-                    Customize every dish exactly how you like it.
+                    Experience the passion of handcrafted meals made with fresh, local ingredients. 
+                    Customize your spice levels and dietary needs for every dish.
                 </p>
 
                 <div class="d-flex flex-column flex-sm-row gap-3">
-                    {% if user.is_authenticated %}
-                    <a href="{% url 'restaurant_list' %}" class="btn btn-primary btn-lg px-5 py-3">
-                        <i class="bi bi-shop me-2"></i> Browse Restaurants
+                    <a href="#menu" class="btn btn-primary btn-lg px-5 py-3">
+                        <i class="bi bi-cart3 me-2"></i> View Our Menu
                     </a>
-                    {% else %}
-                    <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg px-5 py-3">
-                        <i class="bi bi-person-plus me-2"></i> Sign Up Free
-                    </a>
-                    <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary btn-lg px-5 py-3">
-                        Login
+                    {% if not user.is_authenticated %}
+                    <a href="{% url 'accounts:register' %}" class="btn btn-outline-secondary btn-lg px-5 py-3">
+                        Sign Up Free
                     </a>
                     {% endif %}
                 </div>
 
                 <div class="mt-5 d-flex gap-5">
                     <div>
-                        <h5 class="fw-bold">100+</h5>
-                        <p class="text-muted mb-0 small">Local Kitchens</p>
+                        <h5 class="fw-bold">Freshly Made</h5>
+                        <p class="text-muted mb-0 small">Handcrafted Meals</p>
                     </div>
                     <div>
                         <h5 class="fw-bold">Customizable</h5>
-                        <p class="text-muted mb-0 small">Every Order</p>
+                        <p class="text-muted mb-0 small">To Your Taste</p>
                     </div>
                     <div>
-                        <h5 class="fw-bold">Hyper-Local</h5>
-                        <p class="text-muted mb-0 small">Fast Delivery</p>
+                        <h5 class="fw-bold">Fast Delivery</h5>
+                        <p class="text-muted mb-0 small">Within 30 Mins</p>
                     </div>
                 </div>
             </div>
@@ -54,11 +50,11 @@
             <!-- Right - Image / Illustration -->
             <div class="col-lg-6">
                 <div class="position-relative">
-                    <img src="https://images.unsplash.com/photo-1600891964599-f61ba0e24092?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
-                        alt="Delicious homemade food" class="img-fluid rounded-4 shadow-lg">
+                    <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+                        alt="Delicious gourmet food" class="img-fluid rounded-4 shadow-lg">
                     <div class="position-absolute bottom-0 start-0 end-0 bg-gradient p-4 text-white rounded-bottom-4">
-                        <h5 class="mb-1">Mom's Special Thakali Set</h5>
-                        <p class="mb-0 small">Custom spice level • No onion • No garlic</p>
+                        <h5 class="mb-1">Signature Local Set</h5>
+                        <p class="mb-0 small">Chef's Special • Balanced Nutrition • Farm-to-Table</p>
                     </div>
                 </div>
             </div>
@@ -67,53 +63,66 @@
     </div>
 </section>
 
-<!-- Featured Restaurants -->
-<section class="py-5">
+<!-- Our Signature Dishes -->
+<section class="py-5" id="menu">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="fw-bold">Featured Local Kitchens</h2>
-            <p class="text-muted lead">Popular home chefs and small cafés loved by our community</p>
+            <h2 class="fw-bold">Our Signature Dishes</h2>
+            <p class="text-muted lead">Hand-picked favorites from our kitchen to your table</p>
         </div>
 
         <div class="row g-4">
-            {% for restaurant in restaurants|slice:":6" %}
+            <!-- Dish 1 -->
             <div class="col-md-6 col-lg-4">
                 <div class="card h-100 border-0 shadow-sm hover-shadow">
-                    <img src="{% if restaurant.logo %}{{ restaurant.logo.url }}{% else %}https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80{% endif %}"
-                        class="card-img-top" alt="{{ restaurant.name }}" style="height: 220px; object-fit: cover;">
+                    <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                        class="card-img-top" alt="Healthy Salad Bowl" style="height: 220px; object-fit: cover;">
                     <div class="card-body">
-                        <h5 class="card-title fw-bold">{{ restaurant.name }}</h5>
-                        <p class="card-text text-muted small mb-2">
-                            {{ restaurant.cuisine }} • {{ restaurant.location }}
+                        <h5 class="card-title fw-bold">Garden Fresh Salad</h5>
+                        <p class="card-text text-muted small mb-3">
+                            Organic greens, cherry tomatoes, and balsamic glaze. 
                         </p>
                         <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <span class="badge bg-success">Open Now</span>
-                            </div>
-                            <a href="{% url 'restaurant_detail' restaurant.pk %}"
-                                class="btn btn-sm btn-outline-primary">
-                                View Menu →
-                            </a>
+                            <span class="fw-bold text-primary">$12.99</span>
+                            <button class="btn btn-sm btn-outline-primary">Add to Cart</button>
                         </div>
                     </div>
                 </div>
             </div>
-            {% empty %}
-            <div class="col-12 text-center py-5">
-                <p class="lead text-muted">No restaurants available yet.</p>
-                {% if user.role == 'vendor' %}
-                <a href="{% url 'create_restaurant' %}" class="btn btn-primary">
-                    Create Your Kitchen →
-                </a>
-                {% endif %}
+            <!-- Dish 2 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm hover-shadow">
+                    <img src="https://images.unsplash.com/photo-1567620905732-2d1ec7bb7445?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                        class="card-img-top" alt="Classic Pancakes" style="height: 220px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">Golden Sunrise Pancakes</h5>
+                        <p class="card-text text-muted small mb-3">
+                            Fluffy buttermilk pancakes with maple syrup and berries.
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-primary">$14.50</span>
+                            <button class="btn btn-sm btn-outline-primary">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            {% endfor %}
-        </div>
-
-        <div class="text-center mt-5">
-            <a href="" class="btn btn-outline-primary btn-lg px-5">
-                See All Restaurants
-            </a>
+            <!-- Dish 3 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm hover-shadow">
+                    <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                        class="card-img-top" alt="Gourmet Pizza" style="height: 220px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">Artisan Pepperoni Pizza</h5>
+                        <p class="card-text text-muted small mb-3">
+                            Thin crust, mozzarella, and hand-cut pepperoni.
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-primary">$18.00</span>
+                            <button class="btn btn-sm btn-outline-primary">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -122,41 +131,41 @@
 <section class="py-5 bg-light">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="fw-bold">Why Choose LocalBite?</h2>
-            <p class="text-muted lead">We care about quality, customization, and real connection with your food</p>
+            <h2 class="fw-bold">Why LocalBite?</h2>
+            <p class="text-muted lead">Uncompromising quality and authentic taste in every bite</p>
         </div>
 
         <div class="row g-4 text-center">
             <div class="col-md-4">
                 <div class="p-4">
                     <div class="display-4 text-primary mb-3">
-                        <i class="bi bi-chat-dots-fill"></i>
+                        <i class="bi bi-star-fill"></i>
                     </div>
-                    <h4 class="fw-bold">Real Customization</h4>
+                    <h4 class="fw-bold">Premium Quality</h4>
                     <p class="text-muted">
-                        Tell the kitchen exactly what you want — spice level, allergies, no plastic, ingredient swaps...
+                        We use only the finest ingredients sourced from local organic farms.
                     </p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="p-4">
                     <div class="display-4 text-primary mb-3">
-                        <i class="bi bi-house-heart-fill"></i>
+                        <i class="bi bi-heart-fill"></i>
                     </div>
-                    <h4 class="fw-bold">Home-style & Local</h4>
+                    <h4 class="fw-bold">Made With Love</h4>
                     <p class="text-muted">
-                        Support small home chefs and neighborhood kitchens — not just big chains.
+                        Every dish is handcrafted by our chefs who care about your dining experience.
                     </p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="p-4">
                     <div class="display-4 text-primary mb-3">
-                        <i class="bi bi-shield-check-fill"></i>
+                        <i class="bi bi-clock-fill"></i>
                     </div>
-                    <h4 class="fw-bold">Clear Communication</h4>
+                    <h4 class="fw-bold">Always Fresh</h4>
                     <p class="text-muted">
-                        Kitchens must read and acknowledge your special requests before preparing.
+                        Prepared right when you order to ensure maximum freshness and flavor.
                     </p>
                 </div>
             </div>
@@ -169,41 +178,33 @@
     <div class="container">
         <div class="text-center mb-5">
             <h2 class="fw-bold">How It Works</h2>
-            <p class="text-muted lead">Ordering fresh home-cooked food made simple</p>
+            <p class="text-muted lead">Getting your favorite meal is as easy as 1-2-3</p>
         </div>
 
         <div class="row g-5 justify-content-center">
-            <div class="col-md-3 text-center">
+            <div class="col-md-4 text-center">
                 <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4"
                     style="width: 90px; height: 90px;">
                     <h2 class="mb-0">1</h2>
                 </div>
-                <h5 class="fw-bold">Browse & Select</h5>
-                <p class="text-muted">Find local kitchens and dishes you love</p>
+                <h5 class="fw-bold">Order Online</h5>
+                <p class="text-muted">Browse our menu and pick your favorite dishes</p>
             </div>
-            <div class="col-md-3 text-center">
+            <div class="col-md-4 text-center">
                 <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4"
                     style="width: 90px; height: 90px;">
                     <h2 class="mb-0">2</h2>
                 </div>
-                <h5 class="fw-bold">Customize Your Way</h5>
-                <p class="text-muted">Spice level, allergies, eco options & more</p>
+                <h5 class="fw-bold">We Prepare</h5>
+                <p class="text-muted">Our expert chefs cook your meal with care</p>
             </div>
-            <div class="col-md-3 text-center">
+            <div class="col-md-4 text-center">
                 <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4"
                     style="width: 90px; height: 90px;">
                     <h2 class="mb-0">3</h2>
                 </div>
-                <h5 class="fw-bold">Kitchen Prepares</h5>
-                <p class="text-muted">They confirm your requests before cooking</p>
-            </div>
-            <div class="col-md-3 text-center">
-                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4"
-                    style="width: 90px; height: 90px;">
-                    <h2 class="mb-0">4</h2>
-                </div>
-                <h5 class="fw-bold">Enjoy Fresh Food</h5>
-                <p class="text-muted">Delivered hot and made with care</p>
+                <h5 class="fw-bold">Fast Delivery</h5>
+                <p class="text-muted">Delivered hot and fresh to your doorstep</p>
             </div>
         </div>
     </div>
