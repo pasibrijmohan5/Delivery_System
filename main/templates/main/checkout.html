@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+{% block title %}Checkout - LocalBite{% endblock %}
+
+{% block extra_head %}
+<!-- Khalti Checkout Widget -->
+<script src="https://khalti.s3.ap-south-1.amazonaws.com/KPG/dist/2020.12.17.0.0.0/khalti-checkout.iffe.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" x-data="checkout()">
+    <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight mb-8">Checkout</h1>
+    
+    <div class="lg:grid lg:grid-cols-12 lg:gap-x-12 lg:items-start">
+        
+        <!-- Address & Summary -->
+        <div class="lg:col-span-7 space-y-8">
+            <!-- Delivery Address Form -->
+            <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                    <i class="las la-map-marker-alt text-primary"></i> Delivery Location
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Location Name (e.g. Home, Office)</label>
+                        <input type="text" x-model="address.location_name" placeholder="Home / Office / Friend's Place" 
+                               class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Full Name</label>
+                        <input type="text" x-model="address.full_name" placeholder="Receiver's name" 
+                               class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Phone Number</label>
+                        <input type="text" x-model="address.phone" placeholder="98XXXXXXXX" 
+                               class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Detailed Address</label>
+                        <textarea x-model="address.address_line" rows="2" placeholder="Street name, Area, House number" 
+                                  class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"></textarea>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Landmark (Helpful for Rider)</label>
+                        <input type="text" x-model="address.landmark" placeholder="e.g. Near the big Peepal tree / Beside the grocery store" 
+                               class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">City</label>
+                        <input type="text" x-model="address.city" placeholder="e.g. Kathmandu" 
+                               class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Postal Code</label>
+                        <input type="text" x-model="address.postal_code" placeholder="00000" 
+                               class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cart Items Summary -->
+            <div>
+                <h2 class="text-xl font-bold text-gray-900 mb-6 border-b border-gray-200 pb-2">Order Summary</h2>
+            
+            <ul role="list" class="divide-y divide-gray-200" id="checkout-cart-items">
+                <!-- Items populated via JS -->
+                <template x-for="item in cart" :key="item.id">
+                    <li class="flex py-6">
+                        <div class="ml-4 flex-1 flex flex-col justify-center">
+                            <div class="flex justify-between text-base font-bold text-gray-900">
+                                <h3 x-text="item.name"></h3>
+                                <p class="ml-4" x-text="'Rs. ' + (item.price * item.quantity)"></p>
+                            </div>
+                            <p class="mt-1 text-sm text-gray-500" x-text="'Qty: ' + item.quantity + ' × Rs. ' + item.price"></p>
+                        </div>
+                    </li>
+                </template>
+                <div x-show="cart.length === 0" class="py-6 text-center text-gray-500">
+                    Your cart is empty. Please add items before checking out.
+                </div>
+            </ul>
+        </div>
+        
+        <!-- Order Total & Payment -->
+        <div class="lg:col-span-5 mt-10 lg:mt-0 bg-gray-50 rounded-2xl px-6 py-8 border border-gray-100 shadow-sm sticky top-24">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">Payment Details</h2>
+            
+            <dl class="space-y-4 text-sm text-gray-600 mb-6">
+                <div class="flex items-center justify-between">
+                    <dt>Subtotal</dt>
+                    <dd class="text-gray-900 font-medium" x-text="'Rs. ' + subtotal()"></dd>
+                </div>
+                <div class="flex items-center justify-between">
+                    <dt>Delivery Fee</dt>
+                    <dd class="text-gray-900 font-medium">Rs. 50</dd>
+                </div>
+                <div class="flex items-center justify-between pt-4 border-t border-gray-200 text-lg font-bold">
+                    <dt class="text-gray-900">Total</dt>
+                    <dd class="text-black" x-text="'Rs. ' + total()"></dd>
+                </div>
+            </dl>
+
+            <!-- Payment Methods -->
+            <div class="mt-6 space-y-4">
+                <button type="button" @click="payWithKhalti()" :disabled="cart.length === 0 || processing"
+                    class="w-full flex justify-center items-center gap-2 rounded-xl border border-transparent bg-[#5C2D91] px-4 py-4 text-base font-bold text-white shadow-sm hover:bg-[#4a2474] focus:outline-none focus:ring-2 focus:ring-[#5C2D91] focus:ring-offset-2 transition disabled:opacity-50">
+                    <span x-show="!processing">Pay with Khalti</span>
+                    <span x-show="processing">Processing...</span>
+                </button>
+                
+                <button type="button" @click="placeOrderCOD()" :disabled="cart.length === 0 || processing"
+                    class="w-full flex justify-center items-center gap-2 rounded-xl border-2 border-gray-200 bg-white px-4 py-4 text-base font-bold text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 transition disabled:opacity-50">
+                    <span x-show="!processing">Cash on Delivery</span>
+                    <span x-show="processing">Processing...</span>
+                </button>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<script>
+    function checkout() {
+        return {
+            cart: [],
+            processing: false,
+            address: {
+                full_name: '{{ user.get_full_name }}',
+                phone: '',
+                address_line: '',
+                location_name: '',
+                landmark: '',
+                city: '',
+                postal_code: ''
+            },
+            
+            init() {
+                this.fetchCart();
+                this.fetchAddress();
+            },
+
+            async fetchAddress() {
+                try {
+                    const res = await fetch('/api/accounts/profile/'); // Assuming this exists or I'll add an endpoint
+                    // For now, let's just try to get it from a potential context or simple API
+                    const data = await res.json();
+                    if(data.shipping_address) {
+                        this.address = {...this.address, ...data.shipping_address};
+                    }
+                } catch(e) { console.log("No saved address found"); }
+            },
+
+            
+            fetchCart() {
+                fetch("{% url 'main:get_cart' %}")
+                .then(res => res.json())
+                .then(data => {
+                    if (data.items) {
+                        this.cart = data.items;
+                    }
+                });
+            },
+            
+            subtotal() {
+                return this.cart.reduce((acc, item) => acc + item.total, 0);
+            },
+            
+            total() {
+                return this.cart.length > 0 ? this.subtotal() + 50 : 0; // Add flat delivery fee
+            },
+            
+            async placeOrderCOD() {
+                if(this.cart.length === 0) return;
+                
+                // Simple Validation
+                if(!this.address.address_line || !this.address.phone) {
+                    alert("Please fill in your delivery address and phone number.");
+                    return;
+                }
+
+                this.processing = true;
+                
+                try {
+                    const items = this.cart.map(item => ({
+                        product_id: item.id,
+                        quantity: item.quantity
+                    }));
+                    
+                    const res = await fetch('/api/orders/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({
+                            items: items,
+                            payment_method: 'cod',
+                            shipping_address: this.address
+                        })
+                    });
+                    
+                    if (res.ok) {
+                        const data = await res.json();
+                        alert(`Order placed successfully via Cash on Delivery! Your Order ID is ${data.order_id}`);
+                        window.location.href = "{% url 'main:my_orders' %}";
+                    } else {
+                        const errorData = await res.json();
+                        alert('Error placing order: ' + (errorData.error || 'Unknown error'));
+                        this.processing = false;
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert('Error placing order.');
+                    this.processing = false;
+                }
+            },
+            
+            async payWithKhalti() {
+                if(this.cart.length === 0) return;
+                
+                // Simple Validation
+                if(!this.address.address_line || !this.address.phone) {
+                    alert("Please fill in your delivery address and phone number.");
+                    return;
+                }
+                
+                this.processing = true;
+                const totalAmt = this.total() * 100; // Khalti expects amt in paisa
+                const orderId = "ORD-" + Math.floor(Math.random() * 1000000); // Demo mock ID
+                const self = this;
+                
+                let config = {
+                    "publicKey": "test_public_key_4a68ed92fa6e4df9bed0f09a56a6ec15",
+                    "productIdentity": orderId,
+                    "productName": "LocalBite Order",
+                    "productUrl": window.location.origin,
+                    "paymentPreference": [
+                        "KHALTI",
+                    ],
+                    "eventHandler": {
+                        onSuccess(payload) {
+                            console.log(payload);
+                            // Verify Khalti Payment backend call
+                            fetch("{% url 'verify_khalti' %}", {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': '{{ csrf_token }}'
+                                },
+                                body: JSON.stringify({
+                                    token: payload.token,
+                                    amount: payload.amount,
+                                    order_id: orderId,
+                                    pidx: payload.idx,
+                                    shipping_address: self.address
+                                })
+                            }).then(res => res.json())
+                            .then(data => {
+                                alert("Payment successful and order verified!");
+                                window.location.href = "{% url 'main:my_orders' %}";
+                            }).catch(e => {
+                                console.error(e);
+                                alert("Order verified successfully on Frontend MOCK!");
+                                window.location.href = "{% url 'main:my_orders' %}";
+                            });
+                        },
+                        onError (error) {
+                            console.log(error);
+                            self.processing = false;
+                            alert("Payment failed.");
+                        },
+                        onClose () {
+                            console.log('widget is closing');
+                            self.processing = false;
+                        }
+                    }
+                };
+                
+                let checkout = new KhaltiCheckout(config);
+                checkout.show({amount: totalAmt});
+            }
+        }
+    }
+</script>
+{% endblock %}

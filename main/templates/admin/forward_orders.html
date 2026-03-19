@@ -1,0 +1,34 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<form action="" method="post">
+    {% csrf_token %}
+    <p>Please select a Delivery Rider to forward the following {{ orders|length }} order(s) to:</p>
+    <ul>
+        {% for order in orders %}
+        <li>
+            <strong>{{ order.order_id }}</strong> - {{ order.user.get_full_name|default:order.user.email }} 
+            (Total: Rs. {{ order.total }}, Status: {{ order.get_status_display }})
+            <input type="hidden" name="_selected_action" value="{{ order.id }}">
+        </li>
+        {% endfor %}
+    </ul>
+
+    <input type="hidden" name="action" value="forward_orders">
+    
+    <div style="margin-top: 20px; margin-bottom: 20px;">
+        <label for="rider" style="font-weight: bold;">Select Rider: </label>
+        <select name="rider" id="rider" required style="padding: 5px; width: 300px;">
+            <option value="">---------</option>
+            {% for rider in riders %}
+            <option value="{{ rider.id }}">{{ rider.user.get_full_name|default:rider.user.email }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div>
+        <input type="submit" name="apply" value="Confirm Forwarding" class="default" style="padding: 10px 20px; font-weight: bold; background: var(--button-bg); color: var(--button-fg); border: none; border-radius: 4px; cursor: pointer;">
+        <a href="#" onclick="window.history.back(); return false;" class="button" style="padding: 10px 20px; margin-left: 10px; background: var(--close-button-bg); color: var(--close-button-fg); border: none; border-radius: 4px; text-decoration: none;">Cancel</a>
+    </div>
+</form>
+{% endblock %}

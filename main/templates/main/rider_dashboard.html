@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}Rider Dashboard - LocalBite{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen pt-4 pb-12" x-data="riderDashboard()">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 mb-6 flex items-center gap-4">
+            <div class="w-16 h-16 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-3xl">
+                <i class="las la-shipping-fast"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Active Deliveries</h1>
+                <p class="text-gray-500 font-medium mt-1">Hello, {{ user.first_name|default:"Rider" }}!</p>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <template x-for="order in orders" :key="order.id">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden">
+                    <!-- Status Indicator Ribbon -->
+                    <div class="absolute top-0 left-0 w-1.5 h-full"
+                         :class="{
+                             'bg-purple-500': order.status === 'on_the_way',
+                             'bg-green-500': order.status === 'delivered',
+                             'bg-gray-300': order.status !== 'on_the_way' && order.status !== 'delivered'
+                         }">
+                    </div>
+                    
+                    <div class="ml-2">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="font-bold text-gray-900 text-lg" x-text="'Order ' + order.order_id"></h3>
+                                <div class="mt-2 text-sm">
+                                    <div class="flex items-center gap-1.5 text-gray-900 font-bold">
+                                        <i class="las la-user"></i> <span x-text="order.customer_name"></span>
+                                    </div>
+                                    <div class="flex items-start gap-1.5 text-gray-500 mt-1">
+                                        <i class="las la-map-marker mt-0.5"></i>
+                                        <div>
+                                            <div x-show="order.location_name" class="font-bold text-primary" x-text="order.location_name"></div>
+                                            <div x-text="order.address_line"></div>
+                                            <div x-show="order.landmark" class="text-xs italic text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded mt-1 inline-block">
+                                                <i class="las la-info-circle"></i> Landmark: <span x-text="order.landmark"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-bold"
+                                  :class="{
+                                      'bg-purple-100 text-purple-800': order.status === 'on_the_way',
+                                      'bg-green-100 text-green-800': order.status === 'delivered',
+                                      'bg-gray-100 text-gray-800': order.status !== 'on_the_way' && order.status !== 'delivered'
+                                  }"
+                                  x-text="order.status.replace('_', ' ').toUpperCase()"></span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center pt-4 border-t border-gray-100">
+                            <div class="space-y-1">
+                                <div class="font-bold text-gray-900" x-text="'Collect: Rs. ' + order.total"></div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full" :class="order.payment_status === 'success' ? 'bg-green-500' : 'bg-amber-500'"></span>
+                                    <span class="text-xs font-bold uppercase tracking-wider" :class="order.payment_status === 'success' ? 'text-green-600' : 'text-amber-600'" 
+                                          x-text="order.payment_status === 'success' ? 'Paid' : 'Collect Cash (' + order.payment_method.toUpperCase() + ')'"></span>
+                                </div>
+                            </div>
+                            
+                            <template x-if="order.status === 'on_the_way'">
+                                <button @click="markDelivered(order.id)" class="bg-black text-white px-5 py-2.5 rounded-xl font-bold hover:bg-gray-800 transition flex items-center gap-2 shadow-sm">
+                                    <i class="las la-check-circle text-lg"></i> Mark Delivered
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <div x-show="orders.length === 0" class="text-center py-16 bg-white rounded-3xl border border-gray-100 shadow-sm">
+                <i class="las la-coffee text-6xl text-gray-300 mb-4"></i>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">No active deliveries</h3>
+                <p class="text-gray-500">Take a break! We'll assign you a new order soon.</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function riderDashboard() {
+        return {
+            orders: [
+                {% for o in orders %}
+                { 
+                    id: {{ o.id }}, 
+                    order_id: '{{ o.order_id }}', 
+                    status: '{{ o.status }}', 
+                    total: '{{ o.total }}',
+                    payment_status: '{{ o.payment.status|default:"pending" }}',
+                    payment_method: '{{ o.payment.method|default:"cod" }}',
+                    customer_name: '{{ o.shipping_address.full_name|default:o.user.get_full_name }}',
+                    address_line: '{{ o.shipping_address.address_line|default:"No address" }}, {{ o.shipping_address.city|default:"" }}',
+                    location_name: '{{ o.shipping_address.location_name|default:"" }}',
+                    landmark: '{{ o.shipping_address.landmark|default:"" }}'
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            
+            async markDelivered(orderId) {
+                if(!confirm("Confirm delivery?")) return;
+                
+                try {
+                    const res = await fetch(`/api/orders/${orderId}/update_status/`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({ status: 'delivered' })
+                    });
+                    if(res.ok) {
+                        const index = this.orders.findIndex(o => o.id === orderId);
+                        this.orders[index].status = 'delivered';
+                    } else {
+                        alert("Could not update status.");
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

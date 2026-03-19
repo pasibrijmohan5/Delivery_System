@@ -43,7 +43,7 @@ class CustomUser(AbstractUser):
     email = models.EmailField(_("email address"), unique=True)
     # avatar_url = models.URLField(blank=True, null=True)
 
-    role = models.TextField(choices=Roles.choices, default=Roles.CUSTOMER)
+    role = models.CharField(max_length=20, choices=Roles.choices, default=Roles.CUSTOMER)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -56,20 +56,31 @@ class CustomUser(AbstractUser):
     def save(self, *args, **kwargs):
         if self.email:
             self.email = self.email.lower()
+        
+        # Ensure riders are marked as staff so they appear in admin/dashboards as expected
+        if self.role == self.Roles.DELIVERY_PERSON:
+            self.is_staff = True
+            
         super().save(*args, **kwargs)
+
+        if self.role == self.Roles.DELIVERY_PERSON:
+            # Avoid circular import if any, though it's in the same file
+            DeliveryPerson.objects.get_or_create(
+                user=self,
+                defaults={
+                    'phone_number': 'N/A',
+                    'vehicle_type': DeliveryPerson.VehicleType.BICYCLE,
+                    'vehicle_plate_number': 'N/A'
+                }
+            )
 
 
 class DeliveryPerson(models.Model):
     user = models.OneToOneField(
         CustomUser, on_delete=models.CASCADE, related_name="delivery_profile"
     )
-    dob = models.DateField(help_text="Date of birth of Delivery Person")
-
     # contact information
-    phone_number = models.CharField(max_length=15, help_text="Normal contact")
-    emergency_contact = models.CharField(
-        max_length=15, help_text="Contact number for emergency cases"
-    )
+    phone_number = models.CharField(max_length=15, help_text="Contact number")
 
     # location
     current_latitude = models.DecimalField(
@@ -80,19 +91,7 @@ class DeliveryPerson(models.Model):
     )
     last_location_update = models.DateTimeField(null=True, blank=True)
 
-    # documents
-    citizenship = models.FileField(
-        upload_to="delivery_person/citizenships/",
-        null=True,
-        blank=True,
-        help_text="front and back side of the citizenship card in a pdf format",
-    )
-    driving_license = models.ImageField(
-        upload_to="delivery_person/driving_licenses/",
-        null=True,
-        blank=True,
-        help_text="Clear scanned image of driving license",
-    )
+
 
     # vehicle info
     class VehicleType(models.TextChoices):
@@ -121,41 +120,6 @@ class DeliveryPerson(models.Model):
     def __str__(self):
         return self.user.get_full_name() or self.user.email
 
-    def clean(self):
-        super().clean()
-
-        today = timezone.now().date()
-
-        if self.user.role != CustomUser.Roles.DELIVERY_PERSON:
-            raise ValidationError("Please choose the user with role 'delivery person'")
-
-        if self.dob > (today - timezone.timedelta(days=18 * 365)):
-            raise ValidationError("Delivery person must be at least 18 years old")
-
-        if self.citizenship and self.citizenship.size > 5 * 1024 * 1024:
-            raise ValidationError("Citizenship pdf file size must be less than 5 MB")
-
-        if self.driving_license and self.driving_license.size > 2 * 1024 * 1024:
-            raise ValidationError(
-                "Driving license image file size must be less than 2 MB"
-            )
-
-        if self.is_verified == True and (
-            not self.citizenship or not self.driving_license
-        ):
-            raise ValidationError(
-                "Delivery person cannot be verified without citizenship and driving license"
-            )
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-
-        # if verified save approved_at
-        if self.is_verified == True:
-            self.approved_at = timezone.now()
-
-        super().save(*args, **kwargs)
-
 
 class ShippingAddress(models.Model):
     user = models.ForeignKey(
@@ -164,6 +128,8 @@ class ShippingAddress(models.Model):
     full_name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20)
     address_line = models.TextField()
+    location_name = models.CharField(max_length=100, blank=True, null=True, help_text="e.g. Home, Office, Friend's House")
+    landmark = models.CharField(max_length=200, blank=True, null=True, help_text="e.g. Near the big white gate")
     city = models.CharField(max_length=50)
     postal_code = models.CharField(max_length=20)
 
