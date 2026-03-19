@@ -82,6 +82,13 @@ class Order(models.Model):
         "accounts.DeliveryPerson", on_delete=models.PROTECT, null=True, blank=True
     )
 
+    shipping_address = models.ForeignKey(
+        "accounts.ShippingAddress", 
+        on_delete=models.PROTECT, 
+        null=True, 
+        blank=True
+    )
+
     def __str__(self):
         return f"Order {self.order_id} ({self.user.email})"
 

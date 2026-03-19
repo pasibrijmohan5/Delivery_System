@@ -1,0 +1,383 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard - LocalBite{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen pt-4 pb-12" x-data="adminDashboard()">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="sm:flex sm:items-center sm:justify-between mb-8">
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Kitchen Dashboard</h1>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <!-- Sidebar Navigation -->
+            <div class="col-span-1 border-r border-transparent md:border-gray-200 pr-0 md:pr-6">
+                <nav class="space-y-2">
+                    <button @click="currentTab = 'overview'" 
+                            :class="{'bg-black text-white hover:bg-gray-800': currentTab === 'overview', 'text-gray-700 hover:text-black hover:bg-gray-100': currentTab !== 'overview'}"
+                            class="w-full text-left px-4 py-3 font-semibold rounded-xl transition flex items-center gap-3">
+                        <i class="las la-chart-pie text-xl"></i>
+                        Overview
+                    </button>
+                    <button @click="currentTab = 'orders'" 
+                            :class="{'bg-black text-white hover:bg-gray-800': currentTab === 'orders', 'text-gray-700 hover:text-black hover:bg-gray-100': currentTab !== 'orders'}"
+                            class="w-full text-left px-4 py-3 font-semibold rounded-xl transition flex items-center gap-3 justify-between">
+                        <div class="flex items-center gap-3">
+                            <i class="las la-clipboard-list text-xl"></i>
+                            Live Orders
+                        </div>
+                        <span class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full" x-text="orders.filter(o => o.status === 'paid' || o.status === 'pending').length"></span>
+                    </button>
+                    <button @click="currentTab = 'dishes'" 
+                            :class="{'bg-black text-white hover:bg-gray-800': currentTab === 'dishes', 'text-gray-700 hover:text-black hover:bg-gray-100': currentTab !== 'dishes'}"
+                            class="w-full text-left px-4 py-3 font-semibold rounded-xl transition flex items-center gap-3">
+                        <i class="las la-utensils text-xl"></i>
+                        Manage Menu
+                    </button>
+                    <button @click="currentTab = 'riders'" 
+                            :class="{'bg-black text-white hover:bg-gray-800': currentTab === 'riders', 'text-gray-700 hover:text-black hover:bg-gray-100': currentTab !== 'riders'}"
+                            class="w-full text-left px-4 py-3 font-semibold rounded-xl transition flex items-center gap-3">
+                        <i class="las la-motorcycle text-xl"></i>
+                        Riders
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Content Area -->
+            <div class="col-span-1 md:col-span-3">
+
+                <!-- OVERVIEW TAB -->
+                <div x-show="currentTab === 'overview'" x-transition x-cloak>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                            <div class="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center text-2xl">
+                                <i class="las la-dollar-sign"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Total Sales</p>
+                                <p class="text-2xl font-bold text-gray-900" x-text="'Rs. ' + totalRevenue()"></p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                            <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-2xl">
+                                <i class="las la-box"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Total Orders</p>
+                                <p class="text-2xl font-bold text-gray-900" x-text="orders.length"></p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                            <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center text-2xl">
+                                <i class="las la-utensils"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Menu Items</p>
+                                <p class="text-2xl font-bold text-gray-900" x-text="dishes.length"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ORDERS TAB -->
+                <div x-show="currentTab === 'orders'" x-transition x-cloak>
+                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+                            <h2 class="font-bold text-gray-900">Manage Orders</h2>
+                        </div>
+                        <div class="divide-y divide-gray-100">
+                            <template x-for="order in orders" :key="order.id">
+                                <div class="p-6 sm:flex sm:justify-between sm:items-center hover:bg-gray-50 transition">
+                                    <div class="mb-4 sm:mb-0">
+                                        <div class="flex items-center gap-3 mb-1">
+                                            <span class="font-bold text-gray-900" x-text="order.order_id"></span>
+                                            <span class="px-2 py-0.5 text-xs font-bold rounded-full" 
+                                                  :class="{
+                                                      'bg-yellow-100 text-yellow-800': order.status === 'pending' || order.status === 'paid',
+                                                      'bg-blue-100 text-blue-800': order.status === 'preparing',
+                                                      'bg-purple-100 text-purple-800': order.status === 'on_the_way',
+                                                      'bg-green-100 text-green-800': order.status === 'delivered'
+                                                  }"
+                                                  x-text="order.status.replace('_', ' ').toUpperCase()"></span>
+                                        </div>
+                                        <div class="text-sm text-gray-600 mb-2">
+                                            User ID: <span x-text="order.user"></span> • Total: <span class="font-bold" x-text="'Rs. ' + order.total"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex flex-wrap gap-2">
+                                        <template x-if="order.status === 'pending' || order.status === 'paid'">
+                                            <button @click="updateOrderStatus(order.id, 'preparing')" class="px-3 py-1.5 text-sm bg-blue-50 text-blue-700 font-semibold rounded-lg hover:bg-blue-100">
+                                                Accept & Prepare
+                                            </button>
+                                        </template>
+                                        <template x-if="order.status === 'preparing'">
+                                            <div class="flex items-center gap-2">
+                                                <select x-model="order.selectedRider" class="text-sm rounded-lg border-gray-300 py-1.5 pl-3 pr-8 shadow-sm focus:border-black focus:ring-black">
+                                                    <option value="">Select Rider</option>
+                                                    <template x-for="rider in riders" :key="rider.id">
+                                                        <option :value="rider.id" x-text="rider.name"></option>
+                                                    </template>
+                                                </select>
+                                                <button @click="assignRider(order.id, order.selectedRider)" class="px-3 py-1.5 text-sm bg-purple-50 text-purple-700 font-semibold rounded-lg hover:bg-purple-100">
+                                                    Assign & Out for Delivery
+                                                </button>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                            <div x-show="orders.length === 0" class="p-8 text-center text-gray-500">
+                                No orders found.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DISHES TAB -->
+                <div x-show="currentTab === 'dishes'" x-transition x-cloak>
+                    <div class="flex justify-end mb-4">
+                        <button @click="openDishModal()" class="bg-black text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-gray-800 transition shadow-sm">
+                            <i class="las la-plus"></i> Add New Dish
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <template x-for="dish in dishes" :key="dish.id">
+                            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden group">
+                                <div class="h-40 bg-gray-200 relative overflow-hidden">
+                                    <img x-show="dish.image" :src="dish.image" class="w-full h-full object-cover">
+                                    <div x-show="!dish.image" class="w-full h-full flex items-center justify-center text-gray-400">
+                                        <i class="las la-image text-3xl"></i>
+                                    </div>
+                                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                        <button @click="openDishModal(dish)" class="w-8 h-8 rounded-full bg-white text-gray-900 flex items-center justify-center hover:scale-110 transition">
+                                            <i class="las la-pen"></i>
+                                        </button>
+                                        <button @click="deleteDish(dish.id)" class="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center hover:scale-110 transition">
+                                            <i class="las la-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="p-4">
+                                    <h3 class="font-bold text-gray-900 text-lg truncate" x-text="dish.name"></h3>
+                                    <p class="font-bold text-primary mt-1" x-text="'Rs. ' + dish.price"></p>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                
+                <!-- RIDERS TAB -->
+                <div x-show="currentTab === 'riders'" x-transition x-cloak>
+                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                            <h2 class="font-bold text-gray-900">Active Delivery Riders</h2>
+                            <span class="bg-black text-white text-xs px-2 py-1 rounded-md font-bold" x-text="riders.length + ' Registered'"></span>
+                        </div>
+                        <div class="divide-y divide-gray-100">
+                            <template x-for="rider in riders" :key="rider.id">
+                                <div class="p-6 flex items-center justify-between hover:bg-gray-50 transition">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+                                            <i class="las la-user-tie text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-bold text-gray-900" x-text="rider.name"></p>
+                                            <p class="text-xs text-gray-500">ID: #<span x-text="rider.id"></span> • Status: <span class="text-green-600 font-bold uppercase tracking-tight">Active</span></p>
+                                        </div>
+                                    </div>
+                                    <button class="text-gray-400 hover:text-black transition">
+                                        <i class="las la-ellipsis-v text-xl"></i>
+                                    </button>
+                                </div>
+                            </template>
+                            <div x-show="riders.length === 0" class="p-12 text-center text-gray-500">
+                                <i class="las la-users-slash text-4xl mb-2"></i>
+                                <p>No delivery riders found in the system.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dish Modal -->
+    <div x-show="isDishModalOpen" x-cloak class="relative z-50 pointer-events-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div x-show="isDishModalOpen" x-transition.opacity class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div x-show="isDishModalOpen" x-transition class="relative transform overflow-hidden rounded-2xl bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6" @click.outside="isDishModalOpen = false">
+                    
+                    <div class="flex justify-between items-center mb-5">
+                        <h3 class="text-xl font-bold leading-6 text-gray-900" id="modal-title" x-text="editingDish ? 'Edit Dish' : 'Add New Dish'"></h3>
+                        <button @click="isDishModalOpen = false" class="text-gray-400 hover:text-gray-500"><i class="las la-times text-2xl"></i></button>
+                    </div>
+
+                    <form @submit.prevent="saveDish" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Name</label>
+                            <input type="text" x-model="dishForm.name" required class="mt-1 block w-full rounded-xl border-gray-300 px-3 py-2 border shadow-sm focus:border-black focus:ring-black sm:text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Description</label>
+                            <textarea x-model="dishForm.description" rows="3" class="mt-1 block w-full rounded-xl border-gray-300 px-3 py-2 border shadow-sm focus:border-black focus:ring-black sm:text-sm"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Price (Rs.)</label>
+                            <input type="number" x-model="dishForm.price" required class="mt-1 block w-full rounded-xl border-gray-300 px-3 py-2 border shadow-sm focus:border-black focus:ring-black sm:text-sm">
+                        </div>
+                        
+                        <div class="pt-4 flex justify-end gap-3 border-t border-gray-100">
+                            <button type="button" @click="isDishModalOpen = false" class="px-4 py-2 font-semibold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50">Cancel</button>
+                            <button type="submit" class="px-4 py-2 font-semibold text-white bg-black rounded-xl hover:bg-gray-800" :disabled="isSaving" x-text="isSaving ? 'Saving...' : 'Save Dish'"></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function adminDashboard() {
+        return {
+            currentTab: 'overview',
+            isDishModalOpen: false,
+            editingDish: null,
+            isSaving: false,
+            
+            // We initialize with data from Django template context
+            orders: [
+                {% for o in orders %}
+                { id: {{ o.id }}, order_id: '{{ o.order_id }}', status: '{{ o.status }}', total: '{{ o.total }}', user: '{{ o.user.email }}', selectedRider: '' }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            dishes: [
+                {% for d in dishes %}
+                { id: {{ d.id }}, name: '{{ d.name|escapejs }}', price: '{{ d.price }}', description: '{{ d.description|escapejs }}', image: '{% if d.image %}{{ d.image.url }}{% endif %}' }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            riders: [
+                {% for r in riders %}
+                { id: {{ r.id }}, name: '{{ r.user.get_full_name|default:r.user.email|escapejs }}' }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            
+            dishForm: { name: '', description: '', price: 0 },
+            
+            totalRevenue() {
+                return this.orders.reduce((acc, o) => acc + parseFloat(o.total), 0).toFixed(2);
+            },
+            
+            openDishModal(dish = null) {
+                this.editingDish = dish;
+                if (dish) {
+                    this.dishForm = { ...dish };
+                } else {
+                    this.dishForm = { name: '', description: '', price: 0 };
+                }
+                this.isDishModalOpen = true;
+            },
+            
+            async saveDish() {
+                this.isSaving = true;
+                const method = this.editingDish ? 'PUT' : 'POST';
+                const url = this.editingDish ? `/api/dishes/${this.editingDish.id}/` : `/api/dishes/`;
+                
+                try {
+                    const res = await fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify(this.dishForm)
+                    });
+                    
+                    if(res.ok) {
+                        const data = await res.json();
+                        if (this.editingDish) {
+                            const index = this.dishes.findIndex(d => d.id === this.editingDish.id);
+                            this.dishes[index] = data;
+                        } else {
+                            this.dishes.unshift(data);
+                        }
+                        this.isDishModalOpen = false;
+                    } else {
+                        alert('Could not save dish');
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert("Error saving. Please try again.");
+                } finally {
+                    this.isSaving = false;
+                }
+            },
+            
+            async deleteDish(id) {
+                if(!confirm("Are you sure you want to delete this dish?")) return;
+                try {
+                    const res = await fetch(`/api/dishes/${id}/`, {
+                        method: 'DELETE',
+                        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                    });
+                    if(res.ok) {
+                        this.dishes = this.dishes.filter(d => d.id !== id);
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            },
+
+            async updateOrderStatus(orderId, newStatus) {
+                try {
+                    const res = await fetch(`/api/orders/${orderId}/update_status/`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({ status: newStatus })
+                    });
+                    if(res.ok) {
+                        const index = this.orders.findIndex(o => o.id === orderId);
+                        this.orders[index].status = newStatus;
+                    } else {
+                        alert("Could not update status.");
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            },
+            
+            async assignRider(orderId, riderId) {
+                if (!riderId) {
+                    alert('Please select a rider first.');
+                    return;
+                }
+                try {
+                    const res = await fetch(`/api/orders/${orderId}/assign_rider/`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({ rider_id: riderId })
+                    });
+                    if(res.ok) {
+                        const index = this.orders.findIndex(o => o.id === orderId);
+                        this.orders[index].status = 'on_the_way';
+                    } else {
+                        alert("Could not assign rider.");
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}
