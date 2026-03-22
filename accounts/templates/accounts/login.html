@@ -16,6 +16,10 @@
         <div class="bg-white py-8 px-4 shadow sm:rounded-2xl sm:px-10 border border-gray-100">
             <form class="space-y-6" method="POST">
                 {% csrf_token %}
+                {% if request.GET.next %}
+                    <input type="hidden" name="next" value="{{ request.GET.next }}">
+                {% endif %}
+
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
                     <div class="mt-1">
