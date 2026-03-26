@@ -4,14 +4,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}LocalBite - Home Cooked Meals Near You{% endblock %}</title>
+    <title>{% block title %}LocalBite{% endblock %}</title>
 
-    <!-- Google Fonts: Inter -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CSS (CDN for rapid prototyping) -->
+    <style>
+        @keyframes testBounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+
+        .test-bounce {
+            animation: testBounce 1s infinite;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-24px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes zoomSoft {
+            from {
+                opacity: 0;
+                transform: scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .animate-fade-up {
+            animation: fadeUp 0.7s ease-out both;
+        }
+
+        .animate-fade-left {
+            animation: fadeLeft 0.8s ease-out both;
+        }
+
+        .animate-zoom-soft {
+            animation: zoomSoft 0.7s ease-out both;
+        }
+        @keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #eeeeee 25%,
+    #dddddd 37%,
+    #eeeeee 63%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 1.4s infinite;
+}
+    </style>
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -22,7 +94,7 @@
                     },
                     colors: {
                         primary: {
-                            DEFAULT: '#00cc99', // A fresh, appetizing green like Uber Eats' accent
+                            DEFAULT: '#00cc99',
                             dark: '#00b386',
                         },
                         dark: '#121212',
@@ -33,7 +105,7 @@
         }
     </script>
 
-    <!-- Alpine.js for lightweight reactivity -->
+    <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <!-- LineAwesome Icons -->
@@ -49,149 +121,186 @@
             min-height: 100vh;
         }
     </style>
+
     {% block extra_head %}{% endblock %}
 </head>
 <body x-data="localbiteApp()">
 
-    <!-- Navbar -->
-    <nav class="bg-white sticky top-0 z-50 shadow-sm border-b border-gray-100">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                
-                <!-- Logo -->
-                <div class="flex-shrink-0 flex items-center">
-                    <a href="{% url 'main:home' %}?view=user" class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xl">L</div>
-                        <span class="font-extrabold text-2xl tracking-tight text-gray-900">LocalBite</span>
-                    </a>
-                </div>
+    <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-xl animate-fade-up ...">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex h-20 items-center justify-between">
 
-                <!-- Desktop Menu -->
-                <div class="hidden md:flex space-x-8 items-center">
-                    <a href="{% url 'main:home' %}?view=user" class="text-gray-700 hover:text-black font-semibold transition-colors">Home</a>
-                    <a href="{% url 'main:home' %}?view=user#menu" class="text-gray-700 hover:text-black font-semibold transition-colors">Menu</a>
-                    
-                    {% if user.is_authenticated %}
-                        {% if user.role == 'customer' %}
-                        <a href="{% url 'main:my_orders' %}" class="text-gray-700 hover:text-black font-semibold transition-colors">My Orders</a>
-                        {% elif user.role == 'delivery_person' %}
-                            {% if request.session.rider_mode != False %}
-                            <a href="{% url 'main:rider_dashboard' %}" class="text-gray-700 hover:text-black font-semibold transition-colors">Active Orders</a>
-                            {% else %}
-                            <a href="{% url 'main:my_orders' %}" class="text-gray-700 hover:text-black font-semibold transition-colors">My Orders</a>
-                            {% endif %}
-                        {% elif user.role == 'admin' %}
-                        <a href="{% url 'main:admin_dashboard' %}" class="text-gray-700 hover:text-black font-semibold transition-colors">Live Orders</a>
-                        {% endif %}
-                    {% endif %}
-                </div>
-
-                <!-- Right Side Actions -->
-                <div class="hidden md:flex items-center space-x-6">
-                    {% if user.is_authenticated %}
-                        {% if user.role == 'admin' %}
-                        <a href="{% url 'main:admin_dashboard' %}" class="bg-gray-100 px-4 py-2 rounded-full font-medium text-sm hover:bg-gray-200 transition">Dashboard</a>
-                        {% elif user.role == 'delivery_person' %}
-                            {% if request.session.rider_mode != False %}
-                            <a href="{% url 'main:toggle_rider_mode' %}" class="text-amber-600 hover:text-amber-700 font-bold transition text-sm flex items-center gap-1">
-                                <i class="las la-user-circle"></i> Switch to Eating Mode
-                            </a>
-                            <a href="{% url 'main:rider_dashboard' %}" class="bg-blue-600 text-white px-4 py-2 rounded-full font-bold text-sm hover:bg-blue-700 transition shadow-sm">Rider View</a>
-                            {% else %}
-                            <a href="{% url 'main:toggle_rider_mode' %}" class="text-blue-600 hover:text-blue-700 font-bold transition text-sm flex items-center gap-1">
-                                <i class="las la-shipping-fast"></i> Switch to Delivery Mode
-                            </a>
-                            <!-- Cart Toggle -->
-                            <button @click="cartOpen = true" class="relative p-2 text-gray-700 hover:bg-gray-100 rounded-full transition">
-                                <i class="las la-shopping-cart text-2xl"></i>
-                                <template x-if="cartCount > 0">
-                                    <span class="absolute top-1 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform bg-primary rounded-full" x-text="cartCount"></span>
-                                </template>
-                            </button>
-                            {% endif %}
-                        {% else %}
-                        <!-- Cart Toggle -->
-                        <button @click="cartOpen = true" class="relative p-2 text-gray-700 hover:bg-gray-100 rounded-full transition">
-                            <i class="las la-shopping-cart text-2xl"></i>
-                            <template x-if="cartCount > 0">
-                                <span class="absolute top-1 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform bg-primary rounded-full" x-text="cartCount"></span>
-                            </template>
-                        </button>
-                        {% endif %}
-
-                        <!-- Profile Dropdown -->
-                        <div class="relative" x-data="{ open: false }">
-                            <button @click="open = !open" @click.outside="open = false" class="flex items-center gap-2 text-gray-700 hover:text-black font-medium">
-                                <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                                    <i class="las la-user text-xl"></i>
-                                </div>
-                                <span>{{ user.first_name|default:user.email|truncatechars:10 }}</span>
-                                <i class="las la-angle-down"></i>
-                            </button>
-
-                            <div x-show="open" x-transition.opacity x-cloak class="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg py-1 z-50">
-                                {% if user.role == 'customer' %}
-                                <a href="{% url 'main:my_orders' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Orders</a>
-                                <hr class="border-gray-100 my-1">
-                                {% elif user.role == 'delivery_person' %}
-                                    {% if request.session.rider_mode != False %}
-                                    <a href="{% url 'main:rider_dashboard' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Active Orders</a>
-                                    {% else %}
-                                    <a href="{% url 'main:my_orders' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Orders</a>
-                                    {% endif %}
-                                <hr class="border-gray-100 my-1">
-                                {% elif user.role == 'admin' %}
-                                <a href="{% url 'main:admin_dashboard' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Admin Dashboard</a>
-                                <hr class="border-gray-100 my-1">
-                                {% endif %}
-                                <a href="{% url 'accounts:logout' %}" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium">Log out</a>
-                            </div>
-                        </div>
-
-                    {% else %}
-                        <a href="{% url 'accounts:login' %}" class="text-gray-900 font-semibold hover:text-gray-600 transition">Log in</a>
-                        <a href="{% url 'accounts:register' %}" class="bg-black text-white px-5 py-2.5 rounded-full font-semibold hover:bg-gray-800 transition shadow-sm">Sign up</a>
-                    {% endif %}
-                </div>
-
-                <!-- Mobile menu button -->
-                <div class="md:hidden flex items-center">
-                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-700 hover:text-black focus:outline-none">
-                        <i class="las la-bars text-3xl"></i>
-                    </button>
-                </div>
+            <!-- Logo -->
+            <div class="flex items-center gap-3">
+                <a href="{% url 'main:home' %}?view=user" class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white font-extrabold text-2xl shadow-lg shadow-emerald-200">
+                        L
+                    </div>
+                    <div>
+                        <span class="block text-2xl font-extrabold tracking-tight text-gray-900">LocalBite</span>
+                        <span class="block text-xs font-medium text-gray-500">Fresh meals, fast delivery</span>
+                    </div>
+                </a>
             </div>
-        </div>
 
-        <!-- Mobile Menu Panel -->
-        <div x-show="mobileMenuOpen" x-transition x-cloak class="md:hidden bg-white border-t border-gray-100 absolute w-full shadow-lg">
-            <div class="px-4 pt-2 pb-6 space-y-2">
-                <a href="{% url 'main:home' %}?view=user" class="block px-3 py-2 rounded-md font-medium text-gray-900 bg-gray-50">Home</a>
-                <a href="{% url 'main:home' %}?view=user#menu" class="block px-3 py-2 rounded-md font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900">Menu</a>
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-full px-3 py-2 shadow-sm">
+                <a href="{% url 'main:home' %}?view=user"
+                   class="px-5 py-2 rounded-full text-sm font-semibold text-gray-700 hover:text-black hover:bg-white transition">
+                    Home
+                </a>
+
+       <a href="{% url 'main:menu_page' %}"
+   class="px-5 py-2 rounded-full text-sm font-semibold {% if request.path == '/menu/' %}bg-black text-white{% else %}text-gray-700 hover:text-black hover:bg-white{% endif %} transition">
+    Menu
+</a>
+
                 {% if user.is_authenticated %}
-                    {% if user.role == 'admin' %}
-                    <a href="{% url 'main:admin_dashboard' %}" class="block px-3 py-2 rounded-md font-medium text-primary bg-primary/10 mb-2">Admin Dashboard</a>
+                    {% if user.role == 'customer' %}
+                    <a href="{% url 'main:my_orders' %}"
+                       class="px-5 py-2 rounded-full text-sm font-semibold text-gray-700 hover:text-black hover:bg-white transition">
+                        My Orders
+                    </a>
                     {% elif user.role == 'delivery_person' %}
                         {% if request.session.rider_mode != False %}
-                        <a href="{% url 'main:rider_dashboard' %}" class="block px-3 py-2 rounded-md font-medium text-primary bg-primary/10 mb-2">Active Orders</a>
-                        <a href="{% url 'main:toggle_rider_mode' %}" class="block px-3 py-2 rounded-md font-medium text-gray-700 hover:bg-gray-50">Switch to User Mode</a>
+                        <a href="{% url 'main:rider_dashboard' %}"
+                           class="px-5 py-2 rounded-full text-sm font-semibold text-gray-700 hover:text-black hover:bg-white transition">
+                            Active Orders
+                        </a>
                         {% else %}
-                        <a href="{% url 'main:my_orders' %}" class="block px-3 py-2 rounded-md font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900">My Orders</a>
-                        <a href="{% url 'main:toggle_rider_mode' %}" class="block px-3 py-2 rounded-md font-medium text-primary bg-primary/10 mb-2 mt-2">Switch to Rider Mode</a>
+                        <a href="{% url 'main:my_orders' %}"
+                           class="px-5 py-2 rounded-full text-sm font-semibold text-gray-700 hover:text-black hover:bg-white transition">
+                            My Orders
+                        </a>
                         {% endif %}
-                    {% elif user.role == 'customer' %}
-                    <a href="{% url 'main:my_orders' %}" class="block px-3 py-2 rounded-md font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900">My Orders</a>
+                    {% elif user.role == 'admin' %}
+                    <a href="{% url 'main:admin_dashboard' %}"
+                       class="px-5 py-2 rounded-full text-sm font-semibold text-gray-700 hover:text-black hover:bg-white transition">
+                        Dashboard
+                    </a>
                     {% endif %}
-                    <a href="{% url 'accounts:logout' %}" class="block px-3 py-2 rounded-md font-medium text-red-600 hover:bg-red-50 mt-4">Log out</a>
-                {% else %}
-                    <div class="mt-4 pt-4 border-t border-gray-100 flex flex-col gap-3">
-                        <a href="{% url 'accounts:login' %}" class="block w-full text-center px-4 py-2 font-medium text-gray-900 border border-gray-300 rounded-lg">Log in</a>
-                        <a href="{% url 'accounts:register' %}" class="block w-full text-center px-4 py-2 font-medium text-white bg-black rounded-lg">Sign up</a>
-                    </div>
                 {% endif %}
             </div>
+
+            <!-- Right Side -->
+            <div class="hidden md:flex items-center gap-3">
+                {% if user.is_authenticated %}
+                    {% if user.role == 'delivery_person' and request.session.rider_mode != False %}
+                        <a href="{% url 'main:toggle_rider_mode' %}"
+                           class="px-4 py-2.5 rounded-full bg-amber-50 text-amber-700 font-bold text-sm hover:bg-amber-100 transition">
+                            Switch to Eating
+                        </a>
+                    {% elif user.role == 'admin' %}
+                        <a href="{% url 'main:admin_dashboard' %}"
+                           class="px-4 py-2.5 rounded-full bg-gray-900 text-white font-bold text-sm hover:bg-black transition">
+                            Admin
+                        </a>
+                    {% else %}
+                        <button @click="cartOpen = true"
+                                class="relative w-11 h-11 rounded-full bg-gray-100 hover:bg-gray-200 transition flex items-center justify-center text-gray-800 shadow-sm">
+                            <i class="las la-shopping-cart text-2xl"></i>
+                            <template x-if="cartCount > 0">
+                                <span class="absolute -top-1 -right-1 min-w-[1.4rem] h-6 px-1 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center"
+                                      x-text="cartCount"></span>
+                            </template>
+                        </button>
+                    {% endif %}
+
+                    <!-- Profile -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open"
+                                @click.outside="open = false"
+                                class="flex items-center gap-3 pl-2 pr-3 py-2 rounded-full bg-white border border-gray-200 shadow-sm hover:shadow-md transition">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-700">
+                                <i class="las la-user text-xl"></i>
+                            </div>
+                            <span class="max-w-[120px] truncate text-sm font-semibold text-gray-800">
+                                {{ user.first_name|default:user.email|truncatechars:12 }}
+                            </span>
+                            <i class="las la-angle-down text-gray-500"></i>
+                        </button>
+
+                        <div x-show="open"
+                             x-transition.opacity
+                             x-cloak
+                             class="absolute right-0 mt-3 w-56 rounded-2xl bg-white border border-gray-100 shadow-2xl overflow-hidden">
+                            <div class="p-2">
+                                {% if user.role == 'customer' %}
+                                <a href="{% url 'main:my_orders' %}" class="block px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                    My Orders
+                                </a>
+                                {% elif user.role == 'delivery_person' %}
+                                    {% if request.session.rider_mode != False %}
+                                    <a href="{% url 'main:rider_dashboard' %}" class="block px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                        Active Orders
+                                    </a>
+                                    {% else %}
+                                    <a href="{% url 'main:my_orders' %}" class="block px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                        My Orders
+                                    </a>
+                                    {% endif %}
+                                {% elif user.role == 'admin' %}
+                                <a href="{% url 'main:admin_dashboard' %}" class="block px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                    Admin Dashboard
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'accounts:logout' %}" class="block px-4 py-3 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50">
+                                    Log out
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                {% else %}
+                    <a href="{% url 'accounts:login' %}"
+                       class="text-sm font-semibold text-gray-700 hover:text-black transition">
+                        Log in
+                    </a>
+                    <a href="{% url 'accounts:register' %}"
+                       class="px-5 py-3 rounded-full bg-gray-900 text-white font-bold text-sm hover:bg-black transition shadow-md">
+                        Sign up
+                    </a>
+                {% endif %}
+            </div>
+
+            <!-- Mobile Button -->
+            <div class="md:hidden flex items-center">
+                <button @click="mobileMenuOpen = !mobileMenuOpen"
+                        class="w-11 h-11 rounded-full border border-gray-200 bg-white text-gray-800 shadow-sm flex items-center justify-center">
+                    <i class="las la-bars text-2xl"></i>
+                </button>
+            </div>
         </div>
-    </nav>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div x-show="mobileMenuOpen" x-transition x-cloak class="md:hidden bg-white border-t border-gray-100 shadow-lg">
+        <div class="px-4 py-4 space-y-2">
+            <a href="{% url 'main:home' %}?view=user" class="block px-4 py-3 rounded-xl bg-gray-50 font-medium text-gray-900">Home</a>
+            <a href="{% url 'main:home' %}?view=user#menu" class="block px-4 py-3 rounded-xl font-medium text-gray-700 hover:bg-gray-50">Menu</a>
+
+            {% if user.is_authenticated %}
+                {% if user.role == 'customer' %}
+                <a href="{% url 'main:my_orders' %}" class="block px-4 py-3 rounded-xl font-medium text-gray-700 hover:bg-gray-50">My Orders</a>
+                {% elif user.role == 'delivery_person' %}
+                    {% if request.session.rider_mode != False %}
+                    <a href="{% url 'main:rider_dashboard' %}" class="block px-4 py-3 rounded-xl font-medium text-gray-700 hover:bg-gray-50">Active Orders</a>
+                    {% else %}
+                    <a href="{% url 'main:my_orders' %}" class="block px-4 py-3 rounded-xl font-medium text-gray-700 hover:bg-gray-50">My Orders</a>
+                    {% endif %}
+                {% elif user.role == 'admin' %}
+                <a href="{% url 'main:admin_dashboard' %}" class="block px-4 py-3 rounded-xl font-medium text-gray-700 hover:bg-gray-50">Dashboard</a>
+                {% endif %}
+                <a href="{% url 'accounts:logout' %}" class="block px-4 py-3 rounded-xl font-semibold text-red-600 hover:bg-red-50">Log out</a>
+            {% else %}
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <a href="{% url 'accounts:login' %}" class="px-4 py-3 rounded-xl border border-gray-200 text-center font-semibold text-gray-900">Log in</a>
+                    <a href="{% url 'accounts:register' %}" class="px-4 py-3 rounded-xl bg-black text-center font-semibold text-white">Sign up</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</nav>
 
     <!-- Cart Sidebar / Drawer -->
     {% if user.role != 'delivery_person' or request.session.rider_mode == False %}
@@ -318,56 +427,78 @@
         {% block content %}
         {% endblock %}
     </main>
+ <footer class="bg-[#0B1F3A] text-white mt-10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-    <!-- Footer -->
-    <footer class="bg-gray-900 border-t border-gray-800 pt-16 pb-8 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-                <div class="col-span-1 md:col-span-2">
-                    <a href="#" class="flex items-center gap-2 mb-4">
-                        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xl">L</div>
-                        <span class="font-extrabold text-2xl tracking-tight text-white">LocalBite</span>
-                    </a>
-                    <p class="text-gray-400 mt-4 max-w-sm text-sm leading-relaxed">
-                        Experience the finest home-style cooking delivered straight to your door with love and care.
-                    </p>
-                    <div class="flex space-x-4 mt-6">
-                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="las la-facebook-f text-xl"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="las la-instagram text-xl"></i></a>
-                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="las la-twitter text-xl"></i></a>
+        <div class="grid md:grid-cols-3 gap-8">
+
+            <!-- Left (Brand) -->
+            <div>
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold">
+                        L
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">LocalBite</h2>
+                        <p class="text-xs text-gray-400">Fresh meals, fast delivery</p>
                     </div>
                 </div>
-                
-                <div>
-                    <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Contact Us</h3>
-                    <ul class="space-y-3 text-sm text-gray-400">
-                        <li class="flex items-center gap-2">
-                            <i class="las la-phone text-primary"></i> 
-                            <span>9856789012</span>
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <i class="las la-envelope text-primary"></i> 
-                            <span>deliverysystem@gmail.com</span>
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <i class="las la-map-marker text-primary"></i> 
-                            <span>Baneswor, Kathmandu</span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                <p class="text-gray-500 text-sm">
-                    &copy; {% now "Y" %} LocalBite Technologies Inc.
-                </p>
-                <div class="flex items-center gap-2 text-gray-500 text-sm">
-                    Made with <i class="las la-heart text-primary"></i> for food lovers
-                </div>
-            </div>
-        </div>
-    </footer>
 
+                <p class="text-sm text-gray-400 leading-relaxed max-w-sm">
+                    Experience the finest home-style cooking delivered straight to your door with rich local flavors.
+                </p>
+
+                <!-- Social (smaller) -->
+                <div class="flex gap-3 mt-4">
+                    <div class="w-8 h-8 flex items-center justify-center bg-white/10 rounded-full hover:bg-white/20 transition">
+                        <i class="lab la-facebook-f"></i>
+                    </div>
+                    <div class="w-8 h-8 flex items-center justify-center bg-white/10 rounded-full hover:bg-white/20 transition">
+                        <i class="lab la-instagram"></i>
+                    </div>
+                    <div class="w-8 h-8 flex items-center justify-center bg-white/10 rounded-full hover:bg-white/20 transition">
+                        <i class="lab la-twitter"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle (Links) -->
+            <div>
+                <h3 class="text-sm font-semibold mb-3">Quick Links</h3>
+                <div class="flex flex-col gap-2 text-sm text-gray-400">
+                    <a href="{% url 'main:home' %}?view=user" class="hover:text-white transition">Home</a>
+                    <a href="{% url 'main:menu_page' %}" class="hover:text-white transition">Menu</a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'main:my_orders' %}" class="hover:text-white transition">My Orders</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right (Contact) -->
+            <div>
+                <h3 class="text-sm font-semibold mb-3">Contact</h3>
+                <div class="space-y-2 text-sm text-gray-400">
+                    <p class="flex items-center gap-2">
+                        <i class="las la-phone"></i> 9856789012
+                    </p>
+                    <p class="flex items-center gap-2">
+                        <i class="las la-envelope"></i> deliverysystem@gmail.com
+                    </p>
+                    <p class="flex items-center gap-2">
+                        <i class="las la-map-marker-alt"></i> Baneswor, Kathmandu
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Bottom -->
+        <div class="mt-6 pt-4 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center text-xs text-gray-400 gap-2">
+            <p>© {% now "Y" %} LocalBite Technologies</p>
+            <p>Made with ❤️ for food lovers</p>
+        </div>
+
+    </div>
     {% block extra_scripts %}{% endblock %}
     
     <script>

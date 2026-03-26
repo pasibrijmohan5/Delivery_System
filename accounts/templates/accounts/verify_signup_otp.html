@@ -2,31 +2,88 @@
 {% block title %}Verify OTP{% endblock %}
 
 {% block content %}
-<div class="max-w-md mx-auto py-16 px-4">
-    <div class="bg-white shadow rounded-2xl p-8">
-        <h1 class="text-2xl font-bold mb-2">Verify OTP</h1>
-        <p class="text-gray-600 mb-6">Enter the 6-digit code sent to your email.</p>
+<section class="min-h-[calc(100vh-80px)] bg-[radial-gradient(circle_at_top_left,_rgba(251,191,36,0.35),_transparent_28%),linear-gradient(to_bottom_right,_#fff7ed,_#fefce8,_#ffffff)]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
+        <div class="grid lg:grid-cols-2 gap-10 items-center">
 
-        <form method="POST" class="space-y-4">
-            {% csrf_token %}
-            <input
-                type="text"
-                name="otp"
-                maxlength="6"
-                placeholder="Enter OTP"
-                class="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-400"
-                required
-            >
-            <button type="submit" class="w-full bg-black text-white rounded-xl py-3 font-semibold">
-                Verify OTP
-            </button>
-        </form>
+            <div class="hidden lg:block animate__animated animate__fadeInLeft">
+                <span class="inline-flex items-center gap-2 bg-white/80 backdrop-blur px-4 py-2 rounded-full text-sm font-bold text-orange-700 shadow mb-6">
+                    <i class="las la-shield-alt text-lg"></i> Secure verification
+                </span>
 
-        <div class="mt-4 text-center">
-            <a href="{% url 'accounts:resend_signup_otp' %}" class="text-green-600 font-medium">
-                Resend OTP
-            </a>
+                <h1 class="text-5xl xl:text-6xl font-extrabold text-gray-900 leading-tight">
+                    Verify your
+                    <span class="text-primary block">account</span>
+                </h1>
+
+                <p class="mt-6 text-lg text-gray-700 leading-8 max-w-xl">
+                    We sent a 6-digit verification code to your email. Enter it below to complete your registration securely.
+                </p>
+
+                <div class="mt-10 bg-white/70 backdrop-blur-xl rounded-[2rem] p-4 shadow-2xl max-w-xl border border-white/60">
+                    <img
+                        src="https://images.unsplash.com/photo-1528712306091-ed0763094c98?auto=format&fit=crop&w=1200&q=80"
+                        alt="Verification"
+                        class="w-full h-[340px] object-cover rounded-[1.5rem]"
+                    >
+                </div>
+            </div>
+
+            <div class="max-w-md w-full mx-auto">
+                <div class="bg-white/85 backdrop-blur-2xl border border-white/70 shadow-[0_20px_80px_rgba(0,0,0,0.12)] rounded-[2rem] p-8 sm:p-10 animate__animated animate__fadeInUp">
+
+                    <div class="flex justify-center mb-6">
+                        <div class="w-16 h-16 rounded-3xl bg-primary flex items-center justify-center text-white font-extrabold text-3xl shadow-lg shadow-primary/30">
+                            L
+                        </div>
+                    </div>
+
+                    <h2 class="text-center text-3xl font-extrabold text-gray-900">
+                        Verify OTP
+                    </h2>
+                    <p class="mt-2 text-center text-sm text-gray-600">
+                        Enter the 6-digit code sent to your email
+                    </p>
+
+                    <form method="POST" class="space-y-6 mt-8">
+                        {% csrf_token %}
+
+                        <div>
+                            <label for="otp" class="block text-sm font-semibold text-gray-700 mb-2 text-center">
+                                One-Time Password
+                            </label>
+                            <input
+                                id="otp"
+                                type="text"
+                                name="otp"
+                                maxlength="6"
+                                required
+                                placeholder="Enter OTP"
+                                class="w-full px-4 py-4 border border-gray-200 rounded-2xl text-center text-xl font-bold tracking-[0.4em] bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
+                            >
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="w-full bg-gradient-to-r from-primary to-primary-dark text-white py-3.5 rounded-2xl font-bold text-lg hover:opacity-95 transition shadow-lg hover:scale-[1.01]"
+                        >
+                            Verify OTP
+                        </button>
+                    </form>
+
+                    <div class="mt-6 text-center border-t border-gray-100 pt-6">
+                        <p class="text-sm text-gray-600 mb-2">
+                            Didn’t receive the code?
+                        </p>
+                        <a href="{% url 'accounts:resend_signup_otp' %}" class="font-bold text-primary hover:underline">
+                            Resend OTP
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+
         </div>
     </div>
-</div>
+</section>
 {% endblock %}
