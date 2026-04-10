@@ -4,15 +4,8 @@ venv/
 # Python cache
 __pycache__/
 *.pyc
-
-# Database
-db.sqlite3
-
 # Environment variables
 .env
-
-# Media uploads
-media/
 
 # VS Code
 .vscode/

@@ -1,9 +1,11 @@
 import random
+from datetime import datetime, timedelta
+
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib import messages
-from django.core.mail import send_mail
-from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
+from django.utils.html import strip_tags
 
 User = get_user_model()
 
@@ -33,14 +35,41 @@ def register_view(request):
             'password': password1,
         }
         request.session['signup_otp'] = otp
+        request.session['signup_otp_expiry'] = (
+            datetime.now() + timedelta(minutes=5)
+        ).isoformat()
 
-        send_mail(
-            subject="Your LocalBite OTP Code",
-            message=f"Your OTP for signup is: {otp}",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            fail_silently=False,
-        )
+        subject = "Your OTP Code"
+        from_email = "localbite512@gmail.com"
+        to = [email]
+
+        html_content = f"""
+        <div style="font-family: Arial, sans-serif; padding: 24px; background: #f8fafc;">
+            <div style="max-width: 520px; margin: auto; background: white; padding: 32px; border-radius: 16px; border: 1px solid #e5e7eb;">
+                <h2 style="margin: 0 0 16px; color: #111827;">Verify your LocalBite account</h2>
+                <p style="color: #4b5563; font-size: 15px; margin-bottom: 20px;">
+                    Use the OTP below to complete your signup:
+                </p>
+                <div style="margin: 24px 0; text-align: center;">
+                    <span style="display: inline-block; font-size: 32px; font-weight: 700; letter-spacing: 6px; color: #00cc99;">
+                        {otp}
+                    </span>
+                </div>
+                <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
+                    This code expires in 5 minutes.
+                </p>
+                <p style="color: #9ca3af; font-size: 12px; margin-top: 24px;">
+                    If you did not request this, you can ignore this email.
+                </p>
+            </div>
+        </div>
+        """
+
+        text_content = strip_tags(html_content)
+
+        msg = EmailMultiAlternatives(subject, text_content, from_email, to)
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
 
         messages.success(request, "OTP sent to your email.")
         return redirect('accounts:verify_signup_otp')
@@ -53,10 +82,17 @@ def verify_signup_otp(request):
         entered_otp = request.POST.get("otp", "").strip()
         saved_otp = request.session.get("signup_otp")
         signup_data = request.session.get("signup_data")
+        expiry = request.session.get("signup_otp_expiry")
 
-        if not saved_otp or not signup_data:
+        if not saved_otp or not signup_data or not expiry:
             messages.error(request, "OTP session expired. Please register again.")
             return redirect("accounts:register")
+
+        if datetime.now() > datetime.fromisoformat(expiry):
+            request.session.pop("signup_otp", None)
+            request.session.pop("signup_otp_expiry", None)
+            messages.error(request, "OTP expired. Please request a new one.")
+            return redirect("accounts:verify_signup_otp")
 
         if entered_otp == saved_otp:
             user = User.objects.create_user(
@@ -69,6 +105,7 @@ def verify_signup_otp(request):
 
             request.session.pop("signup_otp", None)
             request.session.pop("signup_data", None)
+            request.session.pop("signup_otp_expiry", None)
 
             messages.success(request, "Account created successfully")
             return redirect("accounts:login")
@@ -87,14 +124,38 @@ def resend_signup_otp(request):
 
     otp = str(random.randint(100000, 999999))
     request.session["signup_otp"] = otp
+    request.session["signup_otp_expiry"] = (
+        datetime.now() + timedelta(minutes=5)
+    ).isoformat()
 
-    send_mail(
-        subject="Your New LocalBite OTP Code",
-        message=f"Your new OTP is: {otp}",
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[signup_data["email"]],
-        fail_silently=False,
-    )
+    subject = "Your New LocalBite OTP Code"
+    from_email = "localbite512@gmail.com"
+    to = [signup_data["email"]]
+
+    html_content = f"""
+    <div style="font-family: Arial, sans-serif; padding: 24px; background: #f8fafc;">
+        <div style="max-width: 520px; margin: auto; background: white; padding: 32px; border-radius: 16px; border: 1px solid #e5e7eb;">
+            <h2 style="margin: 0 0 16px; color: #111827;">Your new LocalBite OTP</h2>
+            <p style="color: #4b5563; font-size: 15px; margin-bottom: 20px;">
+                Use this new OTP to continue your signup:
+            </p>
+            <div style="margin: 24px 0; text-align: center;">
+                <span style="display: inline-block; font-size: 32px; font-weight: 700; letter-spacing: 6px; color: #00cc99;">
+                    {otp}
+                </span>
+            </div>
+            <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
+                This code expires in 5 minutes.
+            </p>
+        </div>
+    </div>
+    """
+
+    text_content = strip_tags(html_content)
+
+    msg = EmailMultiAlternatives(subject, text_content, from_email, to)
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
 
     messages.success(request, "A new OTP has been sent.")
     return redirect("accounts:verify_signup_otp")
