@@ -14,4 +14,6 @@ urlpatterns = [
     path('api/cart/', views.get_cart, name='get_cart'),
     path('toggle-rider-mode/', views.toggle_rider_mode, name='toggle_rider_mode'),
     path('rider-dashboard/', views.rider_dashboard, name='rider_dashboard'),
+    path('khalti/initiate/', views.initiate_khalti_payment, name='initiate_khalti'),
+    path('khalti/verify/', views.verify_khalti_payment, name='verify_khalti'),
 ]

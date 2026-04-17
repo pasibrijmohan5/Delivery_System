@@ -11,9 +11,14 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -25,7 +30,7 @@ SECRET_KEY = 'django-insecure-c$)v&ih39m-47qv&p#o$4kd%5rhcgoocpz61coz0-5$hj*wd1q
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -157,3 +162,8 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # Redirects
 LOGIN_REDIRECT_URL = 'main:home'
 LOGOUT_REDIRECT_URL = 'main:home'
+
+# Khalti Settings
+KHALTI_PUBLIC_KEY = os.getenv('KHALTI_PUBLIC_KEY')
+KHALTI_SECRET_KEY = os.getenv('KHALTI_SECRET_KEY')
+KHALTI_BASE_URL = os.getenv('KHALTI_BASE_URL', 'https://a.khalti.com/api/v2/')

@@ -140,7 +140,7 @@
                 </div>
 
                 <div class="hidden md:flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-full px-3 py-2 shadow-sm">
-                    <a href="{% url 'main:home' %}?view=user"
+                    <a href="{% if user.is_authenticated and user.role == 'admin' %}{% url 'main:admin_dashboard' %}{% else %}{% url 'main:home' %}?view=user{% endif %}"
                        class="px-5 py-2 rounded-full text-sm font-semibold {% if request.path == '/' %}bg-black text-white{% else %}text-gray-700 hover:text-black hover:bg-white{% endif %} transition">
                         Home
                     </a>
@@ -187,7 +187,7 @@
                         {% elif user.role == 'admin' %}
                             <a href="{% url 'main:admin_dashboard' %}"
                                class="px-4 py-2.5 rounded-full bg-gray-900 text-white font-bold text-sm hover:bg-black transition">
-                                Admin
+                                Dashboard
                             </a>
                         {% else %}
                             <button @click="cartOpen = true"
@@ -293,6 +293,7 @@
         </div>
     </nav>
 
+    {% if user.role != 'admin' %}
     {% if user.role != 'delivery_person' or request.session.rider_mode == False %}
     <div x-show="cartOpen" x-cloak class="relative z-[100]" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
         <div x-show="cartOpen" x-transition.opacity class="fixed inset-0 bg-gray-900 bg-opacity-50 transition-opacity"></div>
@@ -382,6 +383,7 @@
             </div>
         </div>
     </div>
+    {% endif %}
     {% endif %}
 
     {% if messages %}
@@ -515,7 +517,7 @@
                     return;
                     {% endif %}
 
-                    fetch(/api/cart/add/${productId}/)
+                    fetch(`/api/cart/add/${productId}/`)
                     .then(res => {
                         if (res.status === 401) {
                             window.location.href = "{% url 'accounts:login' %}";
@@ -532,7 +534,7 @@
                 },
 
                 removeFromCart(productId) {
-                    fetch(/api/cart/remove/${productId}/)
+                    fetch(`/api/cart/remove/${productId}/`)
                     .then(res => res.json())
                     .then(data => {
                         if (data && data.status === 'success') {

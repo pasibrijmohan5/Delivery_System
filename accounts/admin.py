@@ -11,11 +11,20 @@ class CustomUserAdmin(UserAdmin):
     model = CustomUser
     list_display = ['email', 'first_name', 'last_name', 'role', 'is_staff']
     ordering = ['email']
-    fieldsets = UserAdmin.fieldsets + (
+    fieldsets = (
+        (None, {'fields': ('email', 'password')}),
+        ('Personal info', {'fields': ('first_name', 'last_name')}),
+        ('Permissions', {
+            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
+        }),
+        ('Important dates', {'fields': ('last_login', 'date_joined')}),
         ('Role Information', {'fields': ('role',)}),
     )
-    add_fieldsets = UserAdmin.add_fieldsets + (
-        ('Role Information', {'fields': ('role',)}),
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'password', 'first_name', 'last_name', 'role'),
+        }),
     )
 
 admin.site.register(CustomUser, CustomUserAdmin)

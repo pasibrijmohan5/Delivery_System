@@ -2,8 +2,7 @@
 {% block title %}Checkout - LocalBite{% endblock %}
 
 {% block extra_head %}
-<!-- Khalti Checkout Widget -->
-<script src="https://khalti.s3.ap-south-1.amazonaws.com/KPG/dist/2020.12.17.0.0.0/khalti-checkout.iffe.js"></script>
+<!-- Khalti V2 integration doesn't necessarily need the legacy script for the redirect flow -->
 {% endblock %}
 
 {% block content %}
@@ -225,59 +224,33 @@
                 }
                 
                 this.processing = true;
-                const totalAmt = this.total() * 100; // Khalti expects amt in paisa
-                const orderId = "ORD-" + Math.floor(Math.random() * 1000000); // Demo mock ID
-                const self = this;
                 
-                let config = {
-                    "publicKey": "test_public_key_4a68ed92fa6e4df9bed0f09a56a6ec15",
-                    "productIdentity": orderId,
-                    "productName": "LocalBite Order",
-                    "productUrl": window.location.origin,
-                    "paymentPreference": [
-                        "KHALTI",
-                    ],
-                    "eventHandler": {
-                        onSuccess(payload) {
-                            console.log(payload);
-                            // Verify Khalti Payment backend call
-                            fetch("{% url 'verify_khalti' %}", {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRFToken': '{{ csrf_token }}'
-                                },
-                                body: JSON.stringify({
-                                    token: payload.token,
-                                    amount: payload.amount,
-                                    order_id: orderId,
-                                    pidx: payload.idx,
-                                    shipping_address: self.address
-                                })
-                            }).then(res => res.json())
-                            .then(data => {
-                                alert("Payment successful and order verified!");
-                                window.location.href = "{% url 'main:my_orders' %}";
-                            }).catch(e => {
-                                console.error(e);
-                                alert("Order verified successfully on Frontend MOCK!");
-                                window.location.href = "{% url 'main:my_orders' %}";
-                            });
+                try {
+                    const res = await fetch("{% url 'main:initiate_khalti' %}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
                         },
-                        onError (error) {
-                            console.log(error);
-                            self.processing = false;
-                            alert("Payment failed.");
-                        },
-                        onClose () {
-                            console.log('widget is closing');
-                            self.processing = false;
-                        }
+                        body: JSON.stringify({
+                            shipping_address: this.address
+                        })
+                    });
+                    
+                    const data = await res.json();
+                    
+                    if (res.ok && data.payment_url) {
+                        // Redirect user to Khalti payment page
+                        window.location.href = data.payment_url;
+                    } else {
+                        alert("Error initiating payment: " + (data.error || "Unknown error"));
+                        this.processing = false;
                     }
-                };
-                
-                let checkout = new KhaltiCheckout(config);
-                checkout.show({amount: totalAmt});
+                } catch (e) {
+                    console.error(e);
+                    alert("An error occurred while initiating payment.");
+                    this.processing = false;
+                }
             }
         }
     }

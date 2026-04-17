@@ -95,11 +95,13 @@
 
                     <div class="flex justify-between items-center mt-4">
                         <span class="font-bold text-primary text-lg">Rs. {{ product.price }}</span>
+                        {% if not user.is_authenticated or user.role != 'admin' %}
                         <button
                             @click="addToCart({{ product.id }})"
                             class="bg-primary text-white px-4 py-2 rounded-xl text-sm font-semibold hover:scale-105 transition">
                             Add
                         </button>
+                        {% endif %}
                     </div>
                 </div>
 

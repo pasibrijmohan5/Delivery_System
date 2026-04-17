@@ -90,11 +90,13 @@
                                     <p class="text-2xl font-extrabold text-primary whitespace-nowrap">
                                         Rs. {{ product.price }}
                                     </p>
+                                    {% if not user.is_authenticated or user.role != 'admin' %}
                                     <button
                                         @click="addToCart({{ product.id }})"
                                         class="bg-black text-white px-5 py-2.5 rounded-2xl text-sm font-semibold hover:bg-gray-800 transition">
                                         Add to Cart
                                     </button>
+                                    {% endif %}
                                 </div>
 
                             </div>
